@@ -131,10 +131,7 @@ poetry run pytest
 
 ## Citation
 
-If you use resfinder_parser in your work, please cite:
-Santos JG et al. resfinder_parser. GitHub repository.
-
-We also recommend citing ResFinder and its associated databases:
+We recommend citing ResFinder (this repository) and its associated databases:
 
 - Zankari et al., 2012. Journal of Antimicrobial Chemotherapy.
 - Florensa et al., 2022. Microbial Genomics.
