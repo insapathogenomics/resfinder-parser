@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "resfinder-parser"
+version = "0.1.0"
+description = "Parser for ResFinder output data"
+authors = ["João Dourado Santos <joao.dourado@insa.min-saude.pt>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "resfinder_parser", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pandas = "^2.0"
+
+[tool.poetry.scripts]
+resfinder-parser = "resfinder_parser.__main__:main"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

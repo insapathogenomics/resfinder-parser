@@ -1,0 +1,4 @@
+Resistance gene	Identity	Alignment Length/Gene Length	Coverage	Position in reference	Contig	Position in contig	Phenotype	Accession no.
+blaFOX-7	95.47	1149/1149	100.0	1..1149	F29-1_NODE_3_length_203939_cov_21.542995_pilon	112993..114141	Amoxicillin, Amoxicillin+Clavulanic acid, Ampicillin, Ampicillin+Clavulanic acid, Cefotaxime, Cefoxitin, Ceftazidime, Piperacillin, Piperacillin+Tazobactam, Ticarcillin, Ticarcillin+Clavulanic acid	AJ703796
+ampS	94.07	793/795	99.74842767295597	1..793	F29-1_NODE_10_length_130263_cov_25.817285_pilon	118438..119230	Unknown Beta-lactam	X80276
+cphA4	94.09	762/765	99.47712418300654	1..762	F29-1_NODE_37_length_48873_cov_21.427760_pilon	35355..36115	Unknown Beta-lactam	AY227050

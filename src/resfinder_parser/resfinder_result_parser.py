@@ -5,7 +5,7 @@ import os
 import datetime
 import logging
 from typing import List
-from module.data_classes import IsolatePhenotypes, Phenotype, IsolateSummary
+from .data_classes import IsolatePhenotypes, Phenotype, IsolateSummary
 
 
 class ResfinderParser:
@@ -354,14 +354,14 @@ class ResfinderCollector:
         isolate_summaries = pd.concat(isolate_summaries, axis=0)
 
         genes_affected = self.genes_affected(isolate_phenotypes)
-        combinbined_presence_absence = genes_affected.copy()
+        combined_presence_absence = genes_affected.copy()
 
         if len(pointfinder_results) > 0:
             pointfinder_results = pd.concat(pointfinder_results, axis=0)
 
             pointfinder_results_summary = self.pointfinder_summary(pointfinder_results)
 
-            combinbined_presence_absence = pd.merge(
+            combined_presence_absence = pd.merge(
                 genes_affected,
                 pointfinder_results_summary,
                 on="isolate_id",
@@ -374,7 +374,7 @@ class ResfinderCollector:
             pointfinder_results,
             resfinder_results,
             isolate_summaries,
-            combinbined_presence_absence,
+            combined_presence_absence,
         )
 
     def collect(self):

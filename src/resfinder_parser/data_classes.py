@@ -71,6 +71,8 @@ class IsolatePhenotypes:
 
     def phenotype_dataframe(self):
         data_keep = []
+        default_columns = ["antibiotic"] + Phenotype.phenotype_fields
+        
         for phenotype_name, phenotype in self.phenotypes.items():
             phenotype_data = [phenotype_name]
             for field in phenotype.phenotype_fields:
@@ -86,9 +88,12 @@ class IsolatePhenotypes:
 
             data_keep.append(phenotype_data)
 
-        df = pd.DataFrame(
-            data_keep, columns=["antibiotic"] + phenotype.phenotype_fields
-        )
+        if data_keep:
+            columns = ["antibiotic"] + phenotype.phenotype_fields
+        else:
+            columns = default_columns
+            
+        df = pd.DataFrame(data_keep, columns=columns)
 
         return df
 

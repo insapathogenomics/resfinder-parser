@@ -1,0 +1,11 @@
+Mutation	Nucleotide change	Amino acid change	Resistance	PMID
+gyrA p.T86I	ACA -> ATA	T -> I	Nalidixic Acid, Ciprofloxacin	11266291
+gyrA p.R285K	AGG -> AAG	R -> K	Unknown	-
+gyrA p.A664T	GCC -> ACC	A -> T	Unknown	-
+gyrA p.Q863* - Premature stop codon	CAA -> TAA	Q -> *	Unknown	-
+23S r.296C>G	C -> G	RNA mutations	Unknown	-
+23S r.298G>A	G -> A	RNA mutations	Unknown	-
+23S r.327G>A	G -> A	RNA mutations	Unknown	-
+23S r.364G>C	G -> C	RNA mutations	Unknown	-
+23S r.554A>C	A -> C	RNA mutations	Unknown	-
+23S r.571T>G	T -> G	RNA mutations	Unknown	-

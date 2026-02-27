@@ -1,0 +1,10 @@
+Resistance gene	Identity	Alignment Length/Gene Length	Coverage	Position in reference	Contig	Position in contig	Phenotype	Accession no.
+blaOXA-193	99.87	774/774	100.0	1..774	A13_NODE_11_length_72670_cov_26.395782_pilon	42892..43665	Unknown Beta-lactam	CP013032
+blaOXA-61	99.87	774/774	100.0	1..774	A13_NODE_11_length_72670_cov_26.395782_pilon	42892..43665	Amoxicillin, Amoxicillin+Clavulanic acid, Ampicillin, Ampicillin+Clavulanic acid	AY587956
+blaOXA-489	99.87	774/774	100.0	1..774	A13_NODE_11_length_72670_cov_26.395782_pilon	42892..43665	Unknown Beta-lactam	CP013733
+blaOXA-453	99.87	774/774	100.0	1..774	A13_NODE_11_length_72670_cov_26.395782_pilon	42892..43665	Unknown Beta-lactam	KR061507
+blaOXA-452	99.87	774/774	100.0	1..774	A13_NODE_11_length_72670_cov_26.395782_pilon	42892..43665	Unknown Beta-lactam	KR061505
+blaOXA-451	99.87	774/774	100.0	1..774	A13_NODE_11_length_72670_cov_26.395782_pilon	42892..43665	Unknown Beta-lactam	KR061504
+blaOXA-450	99.87	774/774	100.0	1..774	A13_NODE_11_length_72670_cov_26.395782_pilon	42892..43665	Unknown Beta-lactam	KR061502
+tet(O)	99.32	1920/1920	100.0	1..1920	A13_NODE_4_length_170727_cov_21.658476_pilon	3701..5620	Doxycycline, Tetracycline, Minocycline	M20925
+tet(O)	99.32	1920/1920	100.0	1..1920	A13_NODE_4_length_170727_cov_21.658476_pilon	3701..5620	Doxycycline, Tetracycline, Minocycline	M18896

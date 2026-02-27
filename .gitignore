@@ -1,13 +1,20 @@
 ## python
 .venv
-*__pycache__*
+__pycache__
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+## poetry
+.poetry/
 
 ## dev
 .vscode
-.git
 
+## test
+.pytest_cache
 
 ## local
 tmp/
-test_data/
-

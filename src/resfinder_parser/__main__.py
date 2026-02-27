@@ -1,8 +1,8 @@
-from module.resfinder_result_parser import ResfinderCollector
+import argparse
+from resfinder_parser import ResfinderCollector
 
-if __name__ == "__main__":
-    import argparse
 
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-r",
@@ -20,3 +20,7 @@ if __name__ == "__main__":
 
     collector = ResfinderCollector(args.resfinder_dir, args.output_dir)
     collector.collect()
+
+
+if __name__ == "__main__":
+    main()
