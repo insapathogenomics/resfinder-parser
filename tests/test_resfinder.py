@@ -8,11 +8,11 @@ from resfinder_parser import ResfinderParser, ResfinderCollector
 def test_resfinder_parser_basic(test_data_dir, isolate):
     parser = ResfinderParser(test_data_dir, isolate)
     if isolate == "Isolate04":
-        assert not parser.has_data
+        assert not parser.has_json_data
         assert parser.passport.result_summary == "No results found."
         assert parser.resfinder_results_filepath == ""
     else:
-        assert parser.has_data
+        assert parser.has_json_data
         assert parser.passport.result_summary != ""
         assert os.path.exists(parser.resfinder_results_filepath)
         df = parser.collect_phenotype_results()
@@ -38,6 +38,7 @@ def test_resfinder_collector_init(test_data_dir):
 
 def test_resfinder_collector_all_results(test_data_dir):
     collector = ResfinderCollector(test_data_dir)
+    collector.inspect_directories()
     results = collector.collect_all_results()
     assert isinstance(results, tuple)
     assert len(results) == 4

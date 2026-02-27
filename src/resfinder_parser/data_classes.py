@@ -70,6 +70,9 @@ class IsolatePhenotypes:
         self.phenotypes[phenotype.name] = phenotype
 
     def phenotype_dataframe(self):
+        if not self.phenotypes:
+            return pd.DataFrame(columns=["antibiotic"] + Phenotype.phenotype_fields)
+
         data_keep = []
         default_columns = ["antibiotic"] + Phenotype.phenotype_fields
         

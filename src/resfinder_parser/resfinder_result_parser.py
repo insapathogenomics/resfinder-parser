@@ -10,11 +10,13 @@ from .data_classes import IsolatePhenotypes, Phenotype, IsolateSummary
 
 class ResfinderParser:
     pointfinder_results_filename: str = "PointFinder_results.txt"
-    resfinder_results_filename = "ResFinder_results_tab.txt"
     resfinder_results_suffix = ".json"
     databases_to_exclude = []
 
-    def __init__(self, RESFINDER_dir, isolate_dir):
+    def __init__(self, RESFINDER_dir, isolate_dir, exclude_databases=None):
+        if exclude_databases is None:
+            exclude_databases = []
+        self.databases_to_exclude = exclude_databases
         self.isolate_id = isolate_dir
         
         if os.path.isdir(os.path.join(RESFINDER_dir, isolate_dir, "resfinder_results")):
@@ -31,7 +33,7 @@ class ResfinderParser:
         ]
 
         if len(json_files) == 0:
-            logging.error(
+            logging.info(
                 f"No resfinder json files found for isolate {self.isolate_id}."
             )
             
@@ -45,9 +47,9 @@ class ResfinderParser:
 
         self.time_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        self.has_data = len(json_files) > 0
+        self.has_json_data = len(json_files) > 0
 
-        if self.has_data:
+        if self.has_json_data:
             self.resfinder_results_filepath = os.path.join(
                 RESFINDER_dir, isolate_dir, json_files[0]
             )
@@ -67,8 +69,16 @@ class ResfinderParser:
             self.isolate_id, self.passport.result_summary
         )
 
+    @property
+    def has_resfinder_data(self):
+        return self.has_json_data
+
     def json_parse_antibiotics(self):
         """Parse the resfinder json output into a pandas dataframe."""
+
+        if self.has_json_data is False:
+            return self 
+        
         content = self.read_json()
         ## info to get:
 
@@ -107,7 +117,7 @@ class ResfinderParser:
         results = self.read_json()
         return self.resfinder_json_summary(results)
 
-    def add_analyis_columns(self, df: pd.DataFrame):
+    def add_analysis_columns(self, df: pd.DataFrame):
         df["isolate_id"] = self.isolate_id
         df["analysis_date"] = self.time_now
         df["version"] = self.passport.key
@@ -122,39 +132,97 @@ class ResfinderParser:
     def collect_pointfinder_results(self):
         results = pd.read_csv(self.pointfinder_results_filepath, sep="\t")
 
-        results = self.add_analyis_columns(results)
+        results = self.add_analysis_columns(results)
 
         return results
 
     def collect_phenotype_results(self):
+
+        if self.has_json_data is False:
+            return self.empty_isolate_summary
+
         self.json_parse_antibiotics()
         isolate_results = self.phenotypes.phenotype_dataframe()
-        isolate_results = self.add_analyis_columns(isolate_results)
+        isolate_results = self.add_analysis_columns(isolate_results)
 
         return isolate_results
+    
+    def collect_variations_results(self):
+        results = self.read_json()
+
+        seq_var = []
+        for var, map_dict in results["seq_variations"].items():
+            
+            ## filter out if all databases are in the exclude list
+            databases = [map_dict["ref_database"]]
+            databases_simple = [x.split("-")[0].lower() for x in databases]
+
+            if all(db in self.databases_to_exclude for db in databases_simple):
+                continue
+            
+            phenotypes = "Unknown"
+            if map_dict["phenotypes"] is not None and len(map_dict["phenotypes"]) > 0:
+                phenotypes = ",".join(map_dict["phenotypes"])
+            var_id = var.split(";;")[0]
+            protein_change = 'RNA mutations'
+            if 'ref_aa' in map_dict:
+                protein_change = f"{map_dict['ref_aa'].upper()} -> {map_dict['var_aa'].upper()}"
+            
+            pmids = "-"
+            if 'pmids' in map_dict and map_dict['pmids'] is not None and len(map_dict['pmids']) > 0:
+                pmids = ",".join(map_dict['pmids'])
+
+            databases = ",".join(databases)
+
+            for _ in map_dict['seq_regions']:
+                seq_var.append([
+                    " ".join([var_id, map_dict["seq_var"]]),
+                    f"{map_dict['ref_codon'].upper()} -> {map_dict['var_codon'].upper()}",
+                    protein_change,
+                    phenotypes,
+                    pmids,
+                    databases
+                ])
+
+        seq_var = pd.DataFrame(seq_var, columns=[
+            "Mutation",
+            "Nucleotide change",
+            "Amino acid change",
+            "Resistance",
+            "PMID",
+            "Databases"
+        ])
+
+        self.add_analysis_columns(seq_var)
+
+        return seq_var
 
     def seq_regions_parse(self):
         results = self.read_json()
 
         seq_reg = []
+
         for reg, map in results["seq_regions"].items():
 
             ## filter out if all databases are in the exclude list
             databases = map["ref_database"]
             databases_simple = [x.split("-")[0].lower() for x in databases]
-            if all(db in self.databases_to_exclude for db in databases_simple):
+
+            if all(db in self.databases_to_exclude for db in databases_simple) is True:
                 continue
 
+            databases = ",".join(databases)
+
             for phenotype in map["phenotypes"]:
-                seq_reg.append([reg, phenotype, map["query_id"], map["identity"]])
+                seq_reg.append([reg, phenotype, map["query_id"], map["identity"], map['coverage'], map['grade'], databases])
 
         seq_reg_df = pd.DataFrame(
-            seq_reg, columns=["seq_region", "antibiotic", "query_id", "identity"]
+            seq_reg, columns=["seq_region", "antibiotic", "query_id", "identity", "coverage", "grade", "databases"]
         )
 
         return seq_reg_df
 
-    def extend_resfinder_results(self, resfinder_df):
+    def extend_seq_region_results(self, resfinder_df):
 
         seq_reg_df = self.seq_regions_parse()
 
@@ -162,15 +230,20 @@ class ResfinderParser:
             pheno_df = seq_reg_df[seq_reg_df.antibiotic == phenotype]
 
             if pheno_df.shape[0] == 0:
-                return pd.Series(["", 0])
+                return pd.Series(["", 0, 0, 0, ""])
 
             output = pd.Series(
-                ["; ".join(pheno_df.query_id.values), pheno_df.identity.values[0]]
+                ["; ".join(pheno_df.query_id.values), 
+                 pheno_df.identity.values[0], 
+                 pheno_df.coverage.values[0], 
+                 pheno_df.grade.values[0],
+                 pheno_df.databases.values[0]],
+                 
             )
 
             return output
 
-        resfinder_df[["contigs", "identity"]] = resfinder_df.antibiotic.apply(
+        resfinder_df[["contigs", "identity", "coverage", "grade", "databases"]] = resfinder_df.antibiotic.apply(
             contig_id_info
         )
 
@@ -180,6 +253,9 @@ class ResfinderParser:
         """
         Provide an overview of the isolate's results.
         """
+        if self.has_json_data is False:
+            return self.empty_isolate_summary
+
         summary_df = pd.DataFrame(
             [
                 [
@@ -191,7 +267,7 @@ class ResfinderParser:
             columns=["databases", "provided_species", "result_summary"],
         )
 
-        summary_df = self.add_analyis_columns(summary_df)
+        summary_df = self.add_analysis_columns(summary_df)
 
         return summary_df
 
@@ -220,10 +296,17 @@ class ResfinderParser:
 
 
 class ResfinderCollector:
-    def __init__(self, RESFINDER_dir: str, output_dir: Optional[str] = None):
+    def __init__(self, RESFINDER_dir: str, output_dir: Optional[str] = None,
+                 exclude_databases: Optional[List[str]] = None,
+    ):
         self.RESFINDER_dir = RESFINDER_dir
         self.output_dir = output_dir
+        self._parsers: List[ResfinderParser] = []
         self.isolate_dirs = self.resfinder_dirs()
+        self.databases_to_exclude = []
+        if exclude_databases is not None:
+            self.databases_to_exclude = [db.lower() for db in exclude_databases]
+
         self.logger = logging.getLogger(__name__)
         # set level to info to get the info messages
         self.logger.setLevel(logging.INFO)
@@ -232,6 +315,22 @@ class ResfinderCollector:
         self.logger.info(
             f"Found {len(self.isolate_dirs)} isolate directories in {self.RESFINDER_dir}"
         )
+        self.logger.info(f"Excluded databases: {', '.join(self.databases_to_exclude) if self.databases_to_exclude else 'None'}")
+
+    def __iter__(self):
+        return iter(self._parsers)
+
+    def __len__(self):
+        return len(self._parsers)
+
+    def _get_parser(self, isolate_id: str) -> Optional[ResfinderParser]:
+        for parser in self._parsers:
+            if parser.isolate_id == isolate_id:
+                return parser
+        return None
+
+    def _add_parser(self, parser: ResfinderParser):
+        self._parsers.append(parser)
 
     def _is_isolate_dir(self, dirpath: str):
         if dirpath.startswith("."):
@@ -269,17 +368,17 @@ class ResfinderCollector:
 
         return df
 
-    def pointfinder_summary(
-        self, pointfinder_results: pd.DataFrame
-    ) -> Optional[pd.DataFrame]:
+    def variation_summary(
+        self, variation_results: pd.DataFrame
+    ) -> pd.DataFrame:
 
-        if pointfinder_results.empty:
-            return None
+        if variation_results.empty:
+            return pd.DataFrame(columns=["isolate_id", "Mutation", "Resistance"])
 
-        isolate_ids = pointfinder_results["isolate_id"].unique()
+        isolate_ids = variation_results["isolate_id"].unique()
 
-        pointfinder_known = pointfinder_results[
-            pointfinder_results["Resistance"] != "Unknown"
+        pointfinder_known = variation_results[
+            variation_results["Resistance"] != "Unknown"
         ]
 
         groups = []
@@ -305,13 +404,8 @@ class ResfinderCollector:
         matrix_df = pd.concat(groups, axis=0)
 
         return matrix_df
-
-    def collect_all_results(self):
-        pointfinder_results = []
-        resfinder_results = []
-        isolate_summaries = []
-        isolate_phenotypes = []
-
+    
+    def inspect_directories(self):
         for isolate_dir in self.isolate_dirs:
             if isolate_dir.startswith("."):
                 continue
@@ -319,60 +413,62 @@ class ResfinderCollector:
             if os.path.isdir(os.path.join(self.RESFINDER_dir, isolate_dir)) is False:
                 continue
 
-            isolate_parser = ResfinderParser(self.RESFINDER_dir, isolate_dir)
+            isolate_parser = ResfinderParser(self.RESFINDER_dir, isolate_dir, exclude_databases=self.databases_to_exclude)
 
-            if isolate_parser.has_data is False:
+            self._add_parser(isolate_parser)
+
+    def collect_all_results(self):
+
+        isolate_summaries = []
+        variation_results = []
+        region_results = []
+        isolate_phenotypes = []
+
+        for isolate_parser in self._parsers:
+
+            isolate_summaries.append(isolate_parser.isolate_summary())
+
+            if isolate_parser.has_json_data is False:
                 self.logger.info(
                     f"No results found for isolate {isolate_parser.isolate_id}"
                 )
-                isolate_summary = isolate_parser.empty_isolate_summary
-                isolate_summaries.append(isolate_summary)
-
                 continue
 
             isolate_phenotype_results = isolate_parser.collect_phenotype_results()
-            isolate_phenotype_results = isolate_parser.extend_resfinder_results(
+
+            isolate_phenotype_results = isolate_parser.extend_seq_region_results(
                 isolate_phenotype_results
             )
-            isolate_summary = isolate_parser.isolate_summary()
 
-            if isolate_parser.has_pointfinder_data:
+            isolate_variation_results = isolate_parser.collect_variations_results()
 
-                isolate_pointfinder_results = (
-                    isolate_parser.collect_pointfinder_results()
-                )
-                pointfinder_results.append(isolate_pointfinder_results)
-
-            resfinder_results.append(isolate_phenotype_results)
-            isolate_summaries.append(isolate_summary)
+            variation_results.append(isolate_variation_results)
+            region_results.append(isolate_phenotype_results)
             isolate_phenotypes.append(isolate_parser.phenotypes)
 
-        if len(isolate_phenotypes) == 0:
-            return None, None, None, None
 
-        resfinder_results = pd.concat(resfinder_results, axis=0)
+        region_results = pd.concat(region_results, axis=0)
         isolate_summaries = pd.concat(isolate_summaries, axis=0)
-
         genes_affected = self.genes_affected(isolate_phenotypes)
         combined_presence_absence = genes_affected.copy()
 
-        if len(pointfinder_results) > 0:
-            pointfinder_results = pd.concat(pointfinder_results, axis=0)
+        if len(variation_results) > 0:
+            variation_results = pd.concat(variation_results, axis=0)
 
-            pointfinder_results_summary = self.pointfinder_summary(pointfinder_results)
+            variation_results_summary = self.variation_summary(variation_results)
 
             combined_presence_absence = pd.merge(
                 genes_affected,
-                pointfinder_results_summary,
+                variation_results_summary,
                 on="isolate_id",
                 how="outer",
             )
         else:
-            pointfinder_results = pd.DataFrame()
+            variation_results = pd.DataFrame()
 
         return (
-            pointfinder_results,
-            resfinder_results,
+            region_results,
+            variation_results,
             isolate_summaries,
             combined_presence_absence,
         )
@@ -386,34 +482,36 @@ class ResfinderCollector:
             if os.path.isdir(self.output_dir) is False:
                 os.mkdir(self.output_dir)
 
+        self.inspect_directories()
+
         (
-            pointfinder_results,
-            resfinder_results,
+            region_results,
+            variation_results,
             isolate_summaries,
-            combinbined_presence_absence,
+            combined_presence_absence,
         ) = self.collect_all_results()
 
-        if pointfinder_results is None:
+        if region_results is None:
             self.logger.info("No results found.")
             return
 
-        pointfinder_results.to_csv(
-            os.path.join(self.output_dir, "pointfinder_results.tsv"),
+        region_results.to_csv(
+            os.path.join(self.output_dir, "region_results.tsv"),
             sep="\t",
             index=False,
         )
-        resfinder_results.to_csv(
-            os.path.join(self.output_dir, "resfinder_results.tsv"),
+        variation_results.to_csv(
+            os.path.join(self.output_dir, "variation_results.tsv"),
             sep="\t",
             index=False,
         )
-        isolate_summaries.to_csv(
+        isolate_summaries.to_csv(   
             os.path.join(self.output_dir, "isolate_summaries.tsv"),
             sep="\t",
             index=False,
         )
 
-        combinbined_presence_absence.to_csv(
+        combined_presence_absence.to_csv(
             os.path.join(self.output_dir, "combined_presence_absence.tsv"),
             sep="\t",
             index=False,
