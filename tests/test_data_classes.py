@@ -240,14 +240,14 @@ class TestGeneAffected:
         
         assert result == ""
 
-    def test_gene_present_returns_phenotype_names(self, phenotype_with_seq_regions):
+    def test_gene_present_returns_phenotype_names(self, phenotype_with_seq_regions: IsolatePhenotypes):
         phenotype_with_seq_regions.collect_all_genes_affected()
         
         result = phenotype_with_seq_regions.gene_affected("blaTEM-1")
         
         assert result == "ampicillin"
 
-    def test_gene_associated_with_multiple_phenotypes(self, phenotype_with_multiple_seq_regions_multiple_phenotypes):
+    def test_gene_associated_with_multiple_phenotypes(self, phenotype_with_multiple_seq_regions_multiple_phenotypes: IsolatePhenotypes):
         phenotype_with_multiple_seq_regions_multiple_phenotypes.collect_all_genes_affected()
         
         result = phenotype_with_multiple_seq_regions_multiple_phenotypes.gene_affected("blaTEM-1")

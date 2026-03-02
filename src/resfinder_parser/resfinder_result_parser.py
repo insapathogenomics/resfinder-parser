@@ -16,7 +16,7 @@ class ResfinderParser:
     def __init__(self, RESFINDER_dir, isolate_dir, exclude_databases=None):
         if exclude_databases is None:
             exclude_databases = []
-        self.databases_to_exclude = exclude_databases
+        self.databases_to_exclude = [db.lower() for db in exclude_databases]
         self.isolate_id = isolate_dir
         
         if os.path.isdir(os.path.join(RESFINDER_dir, isolate_dir, "resfinder_results")):
@@ -42,8 +42,6 @@ class ResfinderParser:
             logging.warning(
                 f"Multiple resfinder json files found for isolate {self.isolate_id}. Using {json_files[0]}"
             )
-        
-
 
         self.time_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -148,6 +146,12 @@ class ResfinderParser:
         return isolate_results
     
     def collect_variations_results(self):
+        if self.has_json_data is False:
+            return pd.DataFrame(columns=[
+                "Mutation", "Nucleotide change", "Amino acid change",
+                "Resistance", "PMID", "Databases", "isolate_id", "analysis_date", "version"
+            ])
+
         results = self.read_json()
 
         seq_var = []

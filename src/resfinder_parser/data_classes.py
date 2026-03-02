@@ -27,6 +27,13 @@ class SeqRegion:
 
 
 class Phenotype:
+
+    amr_classes: str
+    amr_resistant: str
+    amr_species_relevant: str
+    grade: str
+    seq_regions: List[SeqRegion]
+
     phenotype_fields = [
         "amr_classes",
         "amr_resistant",
@@ -38,6 +45,11 @@ class Phenotype:
     def __init__(self, name):
         self.name = name
         self.seq_regions: List[SeqRegion] = []
+
+        self.amr_classes = None
+        self.amr_resistant = None
+        self.amr_species_relevant = None
+        self.grade = None
 
     def add_seq_region(self, seq_region: str):
         self.seq_regions.append(SeqRegion(seq_region))

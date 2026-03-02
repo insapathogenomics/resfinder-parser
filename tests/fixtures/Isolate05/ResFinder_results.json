@@ -1,0 +1,141 @@
+{
+  "type": "software_result",
+  "databases": {
+    "ResFinder-4.1.0": {
+      "type": "database",
+      "database_name": "ResFinder",
+      "database_version": "4.1.0",
+      "key": "ResFinder-4.1.0"
+    },
+    "PointFinder-4.1.0": {
+      "type": "database",
+      "database_name": "PointFinder",
+      "database_version": "4.1.0",
+      "key": "PointFinder-4.1.0"
+    },
+    "DisinFinder-2.0.0": {
+      "type": "database",
+      "database_name": "DisinFinder",
+      "database_version": "2.0.0",
+      "key": "DisinFinder-2.0.0"
+    }
+  },
+  "seq_regions": {
+    "blaTEM-1;;1;;JN194384": {
+      "type": "seq_region",
+      "phenotypes": ["ampicillin"],
+      "ref_database": ["ResFinder-4.1.0"],
+      "gene": true,
+      "ref_id": "blaTEM-1_1_JN194384",
+      "name": "blaTEM-1",
+      "ref_acc": "JN194384",
+      "identity": 100.0,
+      "query_id": "sample5_NODE_1_length_100000_cov_50.0",
+      "coverage": 100.0,
+      "grade": 1,
+      "key": "blaTEM-1;;1;;JN194384"
+    },
+    "gyrA;;1;;NC_000962": {
+      "type": "seq_region",
+      "phenotypes": ["ciprofloxacin"],
+      "ref_database": ["PointFinder-4.1.0"],
+      "gene": true,
+      "ref_id": "gyrA_1_NC_000962",
+      "name": "gyrA",
+      "ref_acc": "NC_000962",
+      "identity": 100.0,
+      "query_id": "sample5_NODE_2_length_200000_cov_30.0",
+      "coverage": 100.0,
+      "grade": 1,
+      "key": "gyrA;;1;;NC_000962"
+    }
+  },
+  "seq_variations": {
+    "blaTEM-1;;1;;JN194384;;42;;W": {
+      "type": "seq_variation",
+      "ref_database": "PointFinder-4.1.0",
+      "seq_regions": ["blaTEM-1;;1;;JN194384"],
+      "phenotypes": ["ampicillin"],
+      "seq_var": "p.M42W",
+      "ref_codon": "atg",
+      "var_codon": "tgg",
+      "codon_change": "atg>tgg",
+      "nuc_change": "w",
+      "ref_aa": "m",
+      "var_aa": "w",
+      "ref_start_pos": 42,
+      "ref_end_pos": 42,
+      "substitution": true,
+      "deletion": false,
+      "insertion": false,
+      "ref_id": "blaTEM-1_1_JN194384_42_W",
+      "key": "blaTEM-1;;1;;JN194384;;42;;W",
+      "pmids": ["12345678"],
+      "notes": [""]
+    },
+    "gyrA;;1;;NC_000962;;90;;D": {
+      "type": "seq_variation",
+      "ref_database": "PointFinder-4.1.0",
+      "seq_regions": ["gyrA;;1;;NC_000962"],
+      "phenotypes": ["ciprofloxacin", "levofloxacin"],
+      "seq_var": "p.A90D",
+      "ref_codon": "gct",
+      "var_codon": "gat",
+      "codon_change": "gct>gat",
+      "nuc_change": "d",
+      "ref_aa": "a",
+      "var_aa": "d",
+      "ref_start_pos": 90,
+      "ref_end_pos": 90,
+      "substitution": true,
+      "deletion": false,
+      "insertion": false,
+      "ref_id": "gyrA_1_NC_000962_90_D",
+      "key": "gyrA;;1;;NC_000962;;90;;D",
+      "pmids": ["87654321"],
+      "notes": [""]
+    },
+    "IntI1;;1;;AF417671": {
+      "type": "seq_variation",
+      "ref_database": "DisinFinder-2.0.0",
+      "seq_regions": ["IntI1;;1;;AF417671"],
+      "phenotypes": ["disinfectants"],
+      "seq_var": "r.1a>c",
+      "ref_codon": "a",
+      "var_codon": "c",
+      "nuc_change": "c",
+      "ref_start_pos": 1,
+      "ref_end_pos": 1,
+      "substitution": true,
+      "deletion": false,
+      "insertion": false,
+      "ref_id": "IntI1_1_AF417671_1_c",
+      "key": "IntI1;;1;;AF417671",
+      "pmids": ["11111111"],
+      "notes": [""]
+    }
+  },
+  "phenotypes": {
+    "ampicillin": {
+      "amr_classes": "beta-lactam",
+      "amr_resistant": "yes",
+      "amr_species_relevant": "yes",
+      "grade": "1",
+      "seq_regions": ["blaTEM-1;;1;;JN194384"]
+    },
+    "ciprofloxacin": {
+      "amr_classes": "fluoroquinolone",
+      "amr_resistant": "yes",
+      "amr_species_relevant": "yes",
+      "grade": "1",
+      "seq_regions": ["gyrA;;1;;NC_000962"]
+    }
+  },
+  "software_executions": [],
+  "software_name": "resfinder",
+  "software_version": "4.1.0",
+  "run_date": "2024-01-01",
+  "key": "resfinder-4.1.0",
+  "provided_species": "Escherichia coli",
+  "result_summary": "Resistance genes and point mutations found."
+}
