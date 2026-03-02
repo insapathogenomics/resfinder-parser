@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "resfinder-parser"
-version = "0.2.0"
+version = "0.3.0"
 description = "Parser for ResFinder output data"
 authors = ["João Dourado Santos <joao.dourado@insa.min-saude.pt>"]
 license = "MIT"
